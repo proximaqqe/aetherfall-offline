@@ -42,6 +42,18 @@ jobs:
           EOF
       - name: Import resources
         run: godot --headless --path . --editor --quit
+      - name: Verify Android export configuration
+        run: |
+          echo "Godot editor settings:"
+          grep -E 'export/android/(android_sdk_path|java_sdk_path)' "$HOME/.config/godot/editor_settings-4.4.tres" || true
+          echo "Android SDK components:"
+          ls -la "$ANDROID_HOME/platforms/android-35" "$ANDROID_HOME/build-tools/35.0.0" "$ANDROID_HOME/platform-tools/adb"
+          echo "Android export templates:"
+          ls -la "$HOME/.local/share/godot/export_templates/4.4.1.stable" | head -25
+          echo "Debug keystore:"
+          test -s "$GODOT_ANDROID_KEYSTORE_DEBUG_PATH"
+          echo "Godot export preset:"
+          cat export_presets.cfg
       - name: Export APK
         run: |
           mkdir -p build
