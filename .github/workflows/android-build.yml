@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0' 'ndk;23.2.8568313' 'cmake;3.10.2.4988404'
       - uses: chickensoft-games/setup-godot@v2
         with:
           version: 4.4.1
@@ -30,12 +30,22 @@ jobs:
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PATH=$RUNNER_TEMP/debug.keystore" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey" >> "$GITHUB_ENV"
           echo "GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android" >> "$GITHUB_ENV"
+      - name: Configure Godot Android export paths
+        run: |
+          mkdir -p "$HOME/.config/godot"
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_HOME"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
       - name: Import resources
         run: godot --headless --path . --editor --quit
       - name: Export APK
         run: |
           mkdir -p build
-          godot --headless --path . --export-debug Android build/Aetherfall-debug.apk
+          godot --headless --verbose --path . --export-debug Android build/Aetherfall-debug.apk
           test -s build/Aetherfall-debug.apk
       - uses: actions/upload-artifact@v4
         with:
